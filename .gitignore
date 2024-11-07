@@ -1,0 +1,34 @@
+# Archivos de entorno virtual
+venv/
+env/
+.venv/
+ENV/
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+
+# Archivos de configuración y variables de entorno
+*.env
+*.ini
+*.cfg
+*.local
+
+# Archivos y carpetas de Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Archivos de caché de Jupyter
+.jupyter/
+
+
+# Datos sensibles o temporales
+.DS_Store
+*.log
+*.bak
+*.swp
+*.tmp
+
+# Archivos de dependencias
+*.lock
+poetry.lock
