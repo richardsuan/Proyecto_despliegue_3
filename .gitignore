@@ -8,6 +8,8 @@ __pycache__/
 *.so
 *.pyd
 env-proyecto/
+.tox/
+
 # Archivos de configuración y variables de entorno
 *.env
 *.ini
