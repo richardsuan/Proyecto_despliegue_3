@@ -7,7 +7,7 @@ __pycache__/
 *.py[cod]
 *.so
 *.pyd
-
+env-proyecto/
 # Archivos de configuración y variables de entorno
 *.env
 *.ini

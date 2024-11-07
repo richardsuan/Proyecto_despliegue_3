@@ -7,7 +7,7 @@ Para ejecutar este proyecto, sigue los siguientes pasos:
 Primero, necesitas tener un entorno virtual para el proyecto. Si no tienes uno, puedes crear uno utilizando el siguiente comando:
 
 ```bash
-python3 -m venv ./proyecto
+python3 -m venv ./env-proyecto
 ```
 
 ## 2. Activar el entorno virtual
@@ -17,13 +17,13 @@ Una vez creado el entorno virtual, actívalo ejecutando el siguiente comando:
 - En **Linux/Mac**:
 
     ```bash
-    source ./proyecto/bin/activate
+    source ./env-proyecto/bin/activate
     ```
 
 - En **Windows**:
 
     ```bash
-    .\proyecto\Scripts\activate
+    .\env-proyecto\Scripts\activate
     ```
 
 ## 3. Instalar las dependencias
