@@ -1,4 +1,4 @@
-name: Deploy API to AWS ECS
+name: Deploy API to AWS EC2
 
 on:
   push:
@@ -47,74 +47,33 @@ jobs:
         # Push Docker image to ECR
         docker push $REPOSITORY_URI:$IMAGE_TAG
 
-    - name: Create ECS cluster if it doesn't exist
+    - name: Launch EC2 instance
+      id: launch-instance
       run: |
-        aws ecs describe-clusters --clusters my-cluster || \
-        aws ecs create-cluster --cluster-name my-cluster
+        INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0866a3c8686eaeeba --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-00d8db545b43f4482 --subnet-id subnet-0b838025d528ab60a --associate-public-ip-address --query 'Instances[0].InstanceId' --output text)
+        echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
 
-    - name: Create ECS task definition
+    - name: Wait for EC2 instance to be running
       run: |
-        # Define variables
-        TASK_DEFINITION=task-definition.json
-        CLUSTER_NAME=my-cluster
-        SERVICE_NAME=my-service
+        aws ec2 wait instance-running --instance-ids ${{ env.INSTANCE_ID }}
 
-        # Create task definition file
-        cat <<EOF > $TASK_DEFINITION
-        {
-          "family": "my-api-task",
-          "networkMode": "awsvpc",
-          "containerDefinitions": [
-            {
-              "name": "my-api-container",
-              "image": "$REPOSITORY_URI:$IMAGE_TAG",
-              "essential": true,
-              "portMappings": [
-                {
-                  "containerPort": 8001,
-                  "hostPort": 8001
-                }
-              ],
-              "memory": 512,
-              "cpu": 256
-            }
-          ],
-          "requiresCompatibilities": [
-            "FARGATE"
-          ],
-          "cpu": "256",
-          "memory": "512",
-          "executionRoleArn": "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole",
-          "taskRoleArn": "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole"
-        }
+    - name: Get EC2 instance public IP
+      id: get-ip
+      run: |
+        PUBLIC_IP=$(aws ec2 describe-instances --instance-ids ${{ env.INSTANCE_ID }} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+        echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
+
+    - name: Install Docker and run container on EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no -i MyKeyPair.pem ubuntu@${{ env.PUBLIC_IP }} << EOF
+          sudo apt-get update -y
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo usermod -aG docker ubuntu
+          docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api:latest
+          docker run -d -p 8001:8001 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api:latest
         EOF
 
-        # Register the task definition
-        aws ecs register-task-definition --cli-input-json file://$TASK_DEFINITION
-
-    - name: Create ECS service if it doesn't exist
+    - name: Output EC2 instance public IP
       run: |
-        # Define variables
-        CLUSTER_NAME=my-cluster
-        SERVICE_NAME=my-service
-        SUBNET_ID=subnet-0b838025d528ab60a  # Reemplaza con tu ID de subred
-        SECURITY_GROUP_ID=sg-00d8db545b43f4482  # Reemplaza con tu ID de grupo de seguridad
-
-        # Create ECS service if it doesn't exist
-        aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME || \
-        aws ecs create-service --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --task-definition my-api-task --desired-count 1 --launch-type FARGATE --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
-
-    - name: Update ECS service
-      run: |
-        # Define variables
-        CLUSTER_NAME=my-cluster
-        SERVICE_NAME=my-service
-
-        # Update ECS service to use the new task definition
-        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
-
-    - name: Get ECS service public IP
-      run: |
-        # Get the public IP of the ECS service
-        PUBLIC_IP=$(aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME --query 'services[0].loadBalancers[0].publicIp' --output text)
-        echo "Your service is available at: http://$PUBLIC_IP:8001"
+        echo "Your service is available at: http://${{ env.PUBLIC_IP }}:8001"
