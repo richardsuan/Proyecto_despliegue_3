@@ -47,6 +47,11 @@ jobs:
         # Push Docker image to ECR
         docker push $REPOSITORY_URI:$IMAGE_TAG
 
+    - name: Create SSH key file
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key.pem
+        chmod 600 ssh_key.pem
+
     - name: Get EC2 instance public IP
       id: get-ip
       run: |
