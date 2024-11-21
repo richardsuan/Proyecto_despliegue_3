@@ -69,7 +69,7 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.PUBLIC_IP }} << EOF
           sudo apt-get update -y
-          sudo apt-get install -y docker.io
+          sudo apt-get install -y docker.io unzip
           sudo systemctl start docker
           sudo usermod -aG docker ubuntu
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
