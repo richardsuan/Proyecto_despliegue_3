@@ -22,6 +22,11 @@ jobs:
     - name: Configure AWS region
       run: aws configure set region ${{ secrets.AWS_REGION }}
 
+    - name: Create ECR repository if it doesn't exist
+      run: |
+        aws ecr describe-repositories --repository-names my-api || \
+        aws ecr create-repository --repository-name my-api
+
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
@@ -38,6 +43,11 @@ jobs:
 
         # Push Docker image to ECR
         docker push $REPOSITORY_URI:$IMAGE_TAG
+
+    - name: Create ECS cluster if it doesn't exist
+      run: |
+        aws ecs describe-clusters --clusters my-cluster || \
+        aws ecs create-cluster --cluster-name my-cluster
 
     - name: Create ECS task definition
       run: |
@@ -78,6 +88,18 @@ jobs:
 
         # Register the task definition
         aws ecs register-task-definition --cli-input-json file://$TASK_DEFINITION
+
+    - name: Create ECS service if it doesn't exist
+      run: |
+        # Define variables
+        CLUSTER_NAME=my-cluster
+        SERVICE_NAME=my-service
+        SUBNET_ID=subnet-0b838025d528ab60a  # Reemplaza con tu ID de subred
+        SECURITY_GROUP_ID=sg-00d8db545b43f4482  # Reemplaza con tu ID de grupo de seguridad
+
+        # Create ECS service if it doesn't exist
+        aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME || \
+        aws ecs create-service --cluster $CLUSTER_NAME --service-name $SERVICE_NAME --task-definition my-api-task --desired-count 1 --launch-type FARGATE --network-configuration "awsvpcConfiguration={subnets=[$SUBNET_ID],securityGroups=[$SECURITY_GROUP_ID],assignPublicIp=ENABLED}"
 
     - name: Update ECS service
       run: |
