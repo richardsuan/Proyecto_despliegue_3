@@ -60,15 +60,19 @@ jobs:
         PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
         echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
 
+    - name: Wait for EC2 instance to be ready
+      run: |
+        echo "Waiting for EC2 instance to be ready..."
+        sleep 60  # Espera 60 segundos para dar tiempo a la instancia para estar lista
+
     - name: Install Docker and run container on EC2
       run: |
         ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.PUBLIC_IP }} << EOF
           sudo apt-get update -y
           sudo apt-get install -y docker.io
           sudo systemctl start docker
-          sudo usermod -aG docker ubuntu
-          docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api:latest
-          docker run -d -p 8001:8001 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api:latest
+          sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api:latest
+          sudo docker run -d -p 8001:8001 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api:latest
         EOF
 
     - name: Output EC2 instance public IP
