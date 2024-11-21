@@ -50,7 +50,7 @@ jobs:
     - name: Launch EC2 instance
       id: launch-instance
       run: |
-        INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0866a3c8686eaeeba --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-00d8db545b43f4482 --subnet-id subnet-0b838025d528ab60a --associate-public-ip-address --query 'Instances[0].InstanceId' --output text)
+        INSTANCE_ID=$(aws ec2 run-instances --image-id ami-0866a3c8686eaeeba --count 1 --instance-type t2.micro --key-name ssh_key --security-group-ids sg-00d8db545b43f4482 --subnet-id subnet-0b838025d528ab60a --associate-public-ip-address --query 'Instances[0].InstanceId' --output text)
         echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
 
     - name: Wait for EC2 instance to be running
@@ -65,7 +65,7 @@ jobs:
 
     - name: Install Docker and run container on EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i MyKeyPair.pem ubuntu@${{ env.PUBLIC_IP }} << EOF
+        ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.PUBLIC_IP }} << EOF
           sudo apt-get update -y
           sudo apt-get install -y docker.io
           sudo systemctl start docker
