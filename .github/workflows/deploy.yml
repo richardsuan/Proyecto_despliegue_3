@@ -1,0 +1,86 @@
+name: Deploy API to AWS ECS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and push Docker image
+      id: build-image
+      run: |
+        # Define variables
+        IMAGE_TAG=latest
+        REPOSITORY_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api
+
+        # Build Docker image
+        docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+
+        # Push Docker image to ECR
+        docker push $REPOSITORY_URI:$IMAGE_TAG
+
+    - name: Create ECS task definition
+      run: |
+        # Define variables
+        TASK_DEFINITION=task-definition.json
+        CLUSTER_NAME=my-cluster
+        SERVICE_NAME=my-service
+
+        # Create task definition file
+        cat <<EOF > $TASK_DEFINITION
+        {
+          "family": "my-api-task",
+          "networkMode": "awsvpc",
+          "containerDefinitions": [
+            {
+              "name": "my-api-container",
+              "image": "$REPOSITORY_URI:$IMAGE_TAG",
+              "essential": true,
+              "portMappings": [
+                {
+                  "containerPort": 8001,
+                  "hostPort": 8001
+                }
+              ],
+              "memory": 512,
+              "cpu": 256
+            }
+          ],
+          "requiresCompatibilities": [
+            "FARGATE"
+          ],
+          "cpu": "256",
+          "memory": "512",
+          "executionRoleArn": "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole",
+          "taskRoleArn": "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole"
+        }
+        EOF
+
+        # Register the task definition
+        aws ecs register-task-definition --cli-input-json file://$TASK_DEFINITION
+
+    - name: Update ECS service
+      run: |
+        # Define variables
+        CLUSTER_NAME=my-cluster
+        SERVICE_NAME=my-service
+
+        # Update ECS service to use the new task definition
+        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
