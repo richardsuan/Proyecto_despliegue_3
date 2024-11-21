@@ -22,6 +22,8 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+      with:
+        region: ${{ secrets.AWS_REGION }}
 
     - name: Build and push Docker image
       id: build-image
@@ -74,7 +76,7 @@ jobs:
         EOF
 
         # Register the task definition
-        aws ecs register-task-definition --cli-input-json file://$TASK_DEFINITION
+        aws ecs register-task-definition --cli-input-json file://$TASK_DEFINITION --region ${{ secrets.AWS_REGION }}
 
     - name: Update ECS service
       run: |
@@ -83,4 +85,10 @@ jobs:
         SERVICE_NAME=my-service
 
         # Update ECS service to use the new task definition
-        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
+        aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment --region ${{ secrets.AWS_REGION }}
+
+    - name: Get ECS service public IP
+      run: |
+        # Get the public IP of the ECS service
+        PUBLIC_IP=$(aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME --query 'services[0].loadBalancers[0].publicIp' --output text --region ${{ secrets.AWS_REGION }})
+        echo "Your service is available at: http://$PUBLIC_IP:8001"
