@@ -69,9 +69,12 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.PUBLIC_IP }} << EOF
           sudo apt-get update -y
-          sudo apt-get install -y docker.io awscli
+          sudo apt-get install -y docker.io
           sudo systemctl start docker
           sudo usermod -aG docker ubuntu
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api:latest
           sudo docker run -d -p 8001:8001 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-api:latest
