@@ -97,8 +97,8 @@ jobs:
         # Define variables
         CLUSTER_NAME=my-cluster
         SERVICE_NAME=my-service
-        SUBNET_ID=subnet-12345678  # Reemplaza con tu ID de subred
-        SECURITY_GROUP_ID=sg-12345678  # Reemplaza con tu ID de grupo de seguridad
+        SUBNET_ID=subnet-0b838025d528ab60a  # Reemplaza con tu ID de subred
+        SECURITY_GROUP_ID=sg-00d8db545b43f4482  # Reemplaza con tu ID de grupo de seguridad
 
         # Create ECS service if it doesn't exist
         aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME || \
