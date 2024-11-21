@@ -1,0 +1,16 @@
+# Paquetes de manipulación y análisis de datos
+pandas                # Manejo de datos tabulares, creación de DataFrames
+
+# Paquetes de visualización
+matplotlib            # Gráficos y visualizaciones
+
+# Paquetes de Machine Learning
+scikit-learn          # Modelos de machine learning y herramientas de preprocesamiento
+
+# Herramientas de desarrollo y pruebas
+tox                   # Automatización de entornos de desarrollo y pruebas
+pytest                # Framework para escribir y ejecutar pruebas
+mlflow
+argparse
+pydantic
+strictyaml
