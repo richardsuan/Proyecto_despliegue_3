@@ -111,3 +111,8 @@ Para agregar un nuevo modelo, sigue estos pasos:
      ```sh
      python model/train_pipeline.py nuevo_modelo
      ```
+
+
+## Como se configuró el arn
+1. se realiza la instalacion en nuestro repositorio usando dvc remote add -d myremote s3://modelomachine/models
+2. se agrea los archivos usando git add .dvc/config

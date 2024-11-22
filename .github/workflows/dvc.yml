@@ -1,0 +1,59 @@
+name: DVC Operations
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  dvc:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'  # Cambia esto a la versión de Python que estés usando
+
+    - name: Install DVC and dependencies
+      run: |
+        pip install dvc[all] boto3
+
+    - name: Configure AWS credentials
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws configure set region ${{ secrets.AWS_REGION }}
+
+    - name: Pull DVC data
+      run: |
+        dvc pull
+
+    - name: Add and check for changes in DVC tracked files
+      id: check-changes
+      run: |
+        dvc add model/trained/
+        git diff --exit-code model/trained.dvc || echo "Changes detected"
+
+    - name: Push DVC data if changes detected
+      if: steps.check-changes.outputs.changes_detected == 'true'
+      run: |
+        git add model/trained.dvc .gitignore
+        git commit -m "Add new model version"
+        git push
+        dvc push
+
+    - name: Commit and push DVC metadata if changes detected
+      if: steps.check-changes.outputs.changes_detected == 'true'
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add .
+        git commit -m "Update DVC metadata"
+        git push

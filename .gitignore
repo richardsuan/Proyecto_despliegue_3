@@ -34,4 +34,3 @@ df_depuradov2.csv
 # Archivos de dependencias
 *.lock
 poetry.lock
-model/trained/*.pkl
