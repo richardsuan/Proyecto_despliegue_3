@@ -1,5 +1,5 @@
 target: "rango_precios_var_dependiente"
-version: "1.0.0"
+version: "1.0.1"
 features:
   - municipio
   - departamen
@@ -68,7 +68,7 @@ features:
   - codigo
   - FA
 test_size: 0.25
-random_state: 42
+random_state: 30
 n_estimators: 850
 max_depth: 19
 qual_vars:

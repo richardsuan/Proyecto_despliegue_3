@@ -33,17 +33,18 @@ jobs:
 
     - name: Pull DVC data
       run: |
-        dvc pull
+        dvc pull || echo "Failed to pull some files. Please check the cache and remote storage."
 
-    - name: Add and check for changes in DVC tracked files
+    - name: Check for changes in model files
       id: check-changes
       run: |
-        dvc add model/trained/
-        git diff --exit-code model/trained.dvc || echo "Changes detected"
+        git fetch origin main
+        git diff --name-only origin/main HEAD | grep -E 'model/trained/' || echo "No changes detected"
 
-    - name: Push DVC data if changes detected
+    - name: Add and push DVC tracked files if changes detected
       if: steps.check-changes.outputs.changes_detected == 'true'
       run: |
+        dvc add model/trained/
         git add model/trained.dvc .gitignore
         git commit -m "Add new model version"
         git push
