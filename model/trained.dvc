@@ -1,6 +1,6 @@
 outs:
-- md5: 7312377845bc3eb3ecfdb537a8eef27e.dir
-  size: 6489042202
+- md5: 3f5918a504e2f1c3d68ceb059e481fc6.dir
+  size: 6502077738
   nfiles: 4
   hash: md5
   path: trained
