@@ -10,10 +10,17 @@ on:
 
 jobs:
   deploy:
-    if: ${{ secrets.DISABLE_WORKFLOW != 'true' }}
     runs-on: ubuntu-latest
 
     steps:
+    - name: Check if workflow is disabled
+      id: check-disable
+      run: |
+        if [ "${{ secrets.DISABLE_WORKFLOW }}" == "true" ]; then
+          echo "Workflow is disabled. Exiting."
+          exit 0
+        fi
+
     - name: Checkout repository
       uses: actions/checkout@v2
 
