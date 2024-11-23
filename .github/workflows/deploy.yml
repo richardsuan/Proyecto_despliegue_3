@@ -22,27 +22,33 @@ jobs:
         fi
 
     - name: Checkout repository
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       uses: actions/checkout@v2
 
     - name: Set up Docker Buildx
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       uses: docker/setup-buildx-action@v1
 
     - name: Configure AWS credentials
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       run: |
         aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws configure set region ${{ secrets.AWS_REGION }}
 
     - name: Create ECR repository if it doesn't exist
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       run: |
         aws ecr describe-repositories --repository-names my-api || \
         aws ecr create-repository --repository-name my-api
 
     - name: Login to Amazon ECR
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build and push Docker image
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       id: build-image
       run: |
         # Define variables
@@ -56,11 +62,13 @@ jobs:
         docker push $REPOSITORY_URI:$IMAGE_TAG
 
     - name: Create SSH key file
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       run: |
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ssh_key.pem
         chmod 600 ssh_key.pem
 
     - name: Get EC2 instance public IP
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       id: get-ip
       run: |
         # Reemplaza INSTANCE_ID con el ID de tu instancia existente
@@ -69,11 +77,13 @@ jobs:
         echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
 
     - name: Wait for EC2 instance to be ready
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       run: |
         echo "Waiting for EC2 instance to be ready..."
         sleep 60  # Espera 60 segundos para dar tiempo a la instancia para estar lista
 
     - name: Install Docker and run container on EC2
+      if: steps.check-disable.outputs.DISABLE_WORKFLOW != 'true'
       run: |
         ssh -o StrictHostKeyChecking=no -i ssh_key.pem ubuntu@${{ env.PUBLIC_IP }} << EOF
           sudo apt-get update -y
