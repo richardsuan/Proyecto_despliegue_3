@@ -6,6 +6,7 @@ Created on Sat Nov 23 07:18:43 2024
 @author: jaimeunriza
 """
 
+# Cargar Librerias
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib  # Cambia si usaste otra librería para guardar tu modelo
