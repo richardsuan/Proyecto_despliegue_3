@@ -1,4 +1,4 @@
-# Proyecto de Despliegue de Soluciones Analíticas - Estimación de Precios de la Tierra en Colombia
+# Proyecto de Despliegue de Soluciones Analíticas - Estimación de Precios de la Tierra Rural en Colombia
 
 
 ## Integrantes
