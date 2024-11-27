@@ -1,6 +1,5 @@
 # Proyecto de Despliegue de Soluciones Analíticas - Estimación de Precios de la Tierra Rural en Colombia
 
-
 ## Integrantes
 Roberto Gonzalez Bustamante
 Richard Anderson Suan Yara
@@ -18,6 +17,7 @@ Informalidad y Conflictos Territoriales: La informalidad en la propiedad de tier
 ## Descripción del Conjunto de Datos
 
 El conjunto de datos cuenta con 175,526 registros y fue recolectado entre 2020 y 2024 a partir de muestreos de campo y bases de datos oficiales de entidades como IGAC, IDEAM y UPRA. Los datos incluyen:
+
 
 127 variables originales: que incluyen 4 de ubicación, 33 edáficas, 47 ecosistémicas, 27 hídricas y 20 climáticas.
 Tipos de datos: 14 variables float64, 25 int64 y 90 object (categóricas).
